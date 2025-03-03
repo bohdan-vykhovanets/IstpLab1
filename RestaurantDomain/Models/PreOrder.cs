@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
-namespace RestaurantInfrastructure;
+namespace RestaurantDomain.Models;
 
-public partial class PreOrder
+public partial class PreOrder : Entity
 {
-    public int PreOrderId { get; set; }
-
     public int? ReservationId { get; set; }
 
     public int? MenuItemId { get; set; }
 
+    [DisplayName("Кількість")]
+    [Required(ErrorMessage = "Кількість повинна бути вказана.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Кількість повинна бути додатньою.")]
     public int? Quantity { get; set; }
 
     public virtual MenuItem? MenuItem { get; set; }

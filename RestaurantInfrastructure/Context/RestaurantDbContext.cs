@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using RestaurantInfrastructure;
+using RestaurantDomain.Models;
 
 namespace RestaurantInfrastructure.Context;
 
@@ -40,35 +40,35 @@ public partial class RestaurantDbContext : DbContext
     {
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.CategoryId).HasName("Category_pkey");
+            entity.HasKey(e => e.Id).HasName("Category_pkey");
 
             entity.ToTable("Category");
 
             entity.HasIndex(e => e.Name, "Category_Name_key").IsUnique();
 
-            entity.Property(e => e.CategoryId).HasColumnName("CategoryID");
+            entity.Property(e => e.Id).HasColumnName("CategoryID");
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Cousine>(entity =>
         {
-            entity.HasKey(e => e.CousineId).HasName("Cousine_pkey");
+            entity.HasKey(e => e.Id).HasName("Cousine_pkey");
 
             entity.ToTable("Cousine");
 
             entity.HasIndex(e => e.Name, "Cousine_Name_key").IsUnique();
 
-            entity.Property(e => e.CousineId).HasColumnName("CousineID");
+            entity.Property(e => e.Id).HasColumnName("CousineID");
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         modelBuilder.Entity<MenuItem>(entity =>
         {
-            entity.HasKey(e => e.MenuItemId).HasName("MenuItem_pkey");
+            entity.HasKey(e => e.Id).HasName("MenuItem_pkey");
 
             entity.ToTable("MenuItem");
 
-            entity.Property(e => e.MenuItemId).HasColumnName("MenuItemID");
+            entity.Property(e => e.Id).HasColumnName("MenuItemID");
             entity.Property(e => e.ImageUrl)
                 .HasMaxLength(255)
                 .HasColumnName("ImageURL");
@@ -118,11 +118,11 @@ public partial class RestaurantDbContext : DbContext
 
         modelBuilder.Entity<PreOrder>(entity =>
         {
-            entity.HasKey(e => e.PreOrderId).HasName("PreOrder_pkey");
+            entity.HasKey(e => e.Id).HasName("PreOrder_pkey");
 
             entity.ToTable("PreOrder");
 
-            entity.Property(e => e.PreOrderId).HasColumnName("PreOrderID");
+            entity.Property(e => e.Id).HasColumnName("PreOrderID");
             entity.Property(e => e.MenuItemId).HasColumnName("MenuItemID");
             entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
 
@@ -137,11 +137,11 @@ public partial class RestaurantDbContext : DbContext
 
         modelBuilder.Entity<Reservation>(entity =>
         {
-            entity.HasKey(e => e.ReservationId).HasName("Reservation_pkey");
+            entity.HasKey(e => e.Id).HasName("Reservation_pkey");
 
             entity.ToTable("Reservation");
 
-            entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
+            entity.Property(e => e.Id).HasColumnName("ReservationID");
             entity.Property(e => e.ReservationDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.UserId).HasColumnName("UserID");
 
@@ -152,11 +152,11 @@ public partial class RestaurantDbContext : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.ReviewId).HasName("Review_pkey");
+            entity.HasKey(e => e.Id).HasName("Review_pkey");
 
             entity.ToTable("Review");
 
-            entity.Property(e => e.ReviewId).HasColumnName("ReviewID");
+            entity.Property(e => e.Id).HasColumnName("ReviewID");
             entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.UserId).HasColumnName("UserID");
 
@@ -167,11 +167,11 @@ public partial class RestaurantDbContext : DbContext
 
         modelBuilder.Entity<Table>(entity =>
         {
-            entity.HasKey(e => e.TableId).HasName("Table_pkey");
+            entity.HasKey(e => e.Id).HasName("Table_pkey");
 
             entity.ToTable("Table");
 
-            entity.Property(e => e.TableId).HasColumnName("TableID");
+            entity.Property(e => e.Id).HasColumnName("TableID");
             entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
 
             entity.HasOne(d => d.Reservation).WithMany(p => p.Tables)
@@ -181,13 +181,13 @@ public partial class RestaurantDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("User_pkey");
+            entity.HasKey(e => e.Id).HasName("User_pkey");
 
             entity.ToTable("User");
 
             entity.HasIndex(e => e.Email, "User_Email_key").IsUnique();
 
-            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.Id).HasColumnName("UserID");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(255);
             entity.Property(e => e.PhoneNumber).HasMaxLength(15);

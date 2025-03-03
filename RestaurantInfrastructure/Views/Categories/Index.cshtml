@@ -1,0 +1,35 @@
+﻿@model IEnumerable<RestaurantDomain.Models.Category>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Категорії</h1>
+
+<p>
+    <a asp-action="Create">Додати нову категорію</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                    <a type="button" class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                    <a type="button" class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                    <a type="button" class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
