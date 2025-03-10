@@ -126,6 +126,7 @@ namespace RestaurantInfrastructure.Controllers
             }
 
             var cousine = await _context.Cousines
+                .Include(c => c.MenuItems)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (cousine == null)
             {
@@ -140,13 +141,21 @@ namespace RestaurantInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var cousine = await _context.Cousines.FindAsync(id);
+            var cousine = await _context.Cousines
+                .Include(c => c.MenuItems)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
             if (cousine != null)
             {
+                foreach (var menuItem in cousine.MenuItems.ToList())
+                {
+                    menuItem.Cousines.Remove(cousine);
+                }
+
                 _context.Cousines.Remove(cousine);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

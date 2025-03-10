@@ -22,9 +22,8 @@ namespace RestaurantInfrastructure.Controllers
         }
 
         // GET: MenuItems
-        public async Task<IActionResult> Index(int? id, string? name, int? type)
+        public async Task<IActionResult> Index(int? id, string? name, int? type, string searchString)
         {
-            if (id == null) return View(_context.MenuItems);
             ViewBag.Id = id;
             ViewBag.Name = name;
             ViewBag.Type = type;
@@ -40,7 +39,13 @@ namespace RestaurantInfrastructure.Controllers
             }
             if(type == null)
             {
-                return View(_context.MenuItems);
+                var items = from m in _context.MenuItems
+                            select m;
+                if (!string.IsNullOrEmpty(searchString))
+                {
+                    items = items.Where(s => s.Name.Contains(searchString)).Concat(items.Where(s => s.Description.Contains(searchString)));
+                }
+                return View(await items.ToListAsync());
             }
             else
             {
@@ -57,7 +62,10 @@ namespace RestaurantInfrastructure.Controllers
             }
 
             var menuItem = await _context.MenuItems
+                .Include(m => m.Categories)
+                .Include(m => m.Cousines)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (menuItem == null)
             {
                 return NotFound();
@@ -149,12 +157,43 @@ namespace RestaurantInfrastructure.Controllers
                 return NotFound();
             }
 
-            var menuItem = await _context.MenuItems.FindAsync(id);
+            var menuItem = await _context.MenuItems
+                .Include(m => m.Categories)
+                .Include(m => m.Cousines)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (menuItem == null)
             {
                 return NotFound();
             }
-            return View(menuItem);
+
+            var viewModel = new MenuItemEditViewModel
+            {
+                Id = menuItem.Id,
+                Name = menuItem.Name,
+                Price = menuItem.Price,
+                Description = menuItem.Description,
+                ImageUrl = menuItem.ImageUrl,
+                Availability = menuItem.Availability,
+                SelectedCategoryIds = menuItem.Categories.Select(c => c.Id).ToList(),
+                SelectedCousineIds = menuItem.Cousines.Select(c => c.Id).ToList(),
+
+                AvailableCategories = _context.Categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    })
+                    .ToList(),
+                AvailableCousines = _context.Cousines
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    })
+            };
+
+            return View(viewModel);
         }
 
         // POST: MenuItems/Edit/5
@@ -162,34 +201,93 @@ namespace RestaurantInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,Price,ImageUrl,Availability,Id")] MenuItem menuItem)
+        public async Task<IActionResult> Edit(int id, MenuItemEditViewModel viewModel)
         {
-            if (id != menuItem.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(menuItem);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!MenuItemExists(menuItem.Id))
+                viewModel.AvailableCategories = _context.Categories
+                     .Select(c => new SelectListItem
+                     {
+                         Value = c.Id.ToString(),
+                         Text = c.Name
+                     })
+                     .ToList();
+                viewModel.AvailableCousines = _context.Cousines
+                    .Select(c => new SelectListItem
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    })
+                    .ToList();
+
+                return View(viewModel);
             }
-            return View(menuItem);
+
+            var menuItem = await _context.MenuItems
+                .Include(c => c.Categories)
+                .Include(c => c.Cousines)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (menuItem == null)
+            {
+                return NotFound();
+            }
+
+            menuItem.Name = viewModel.Name;
+            menuItem.Description = viewModel.Description;
+            menuItem.Price = viewModel.Price;
+            menuItem.ImageUrl = viewModel.ImageUrl;
+            menuItem.Availability = viewModel.Availability;
+
+            menuItem.Categories.Clear();
+            if (viewModel.SelectedCategoryIds != null)
+            {
+                foreach (var categoryId in viewModel.SelectedCategoryIds)
+                {
+                    var category = await _context.Categories.FindAsync(categoryId);
+                    if (category != null)
+                    {
+                        menuItem.Categories.Add(category);
+                    }
+                }
+            }
+
+            menuItem.Cousines.Clear();
+            if (viewModel.SelectedCousineIds != null)
+            {
+                foreach (var cousineId in viewModel.SelectedCousineIds)
+                {
+                    var cousine = await _context.Cousines.FindAsync(cousineId);
+                    if (cousine != null)
+                    {
+                        menuItem.Cousines.Add(cousine);
+                    }
+                }
+            }
+
+            try
+            {
+                _context.Update(menuItem);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.MenuItems.Any(e => e.Id == menuItem.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: MenuItems/Delete/5
@@ -201,7 +299,10 @@ namespace RestaurantInfrastructure.Controllers
             }
 
             var menuItem = await _context.MenuItems
+                .Include(m => m.Categories)
+                .Include(m => m.Cousines)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (menuItem == null)
             {
                 return NotFound();
@@ -215,13 +316,20 @@ namespace RestaurantInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var menuItem = await _context.MenuItems.FindAsync(id);
+            var menuItem = await _context.MenuItems
+                .Include (m => m.Categories)
+                .Include (m => m.Cousines)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (menuItem != null)
             {
+                menuItem.Categories.Clear();
+                menuItem.Cousines.Clear();
+
                 _context.MenuItems.Remove(menuItem);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

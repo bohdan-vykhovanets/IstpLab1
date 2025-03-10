@@ -7,8 +7,10 @@ namespace RestaurantDomain.Models;
 
 public partial class PreOrder : Entity
 {
+    [Required]
     public int? ReservationId { get; set; }
 
+    [Required]
     public int? MenuItemId { get; set; }
 
     [DisplayName("Кількість")]

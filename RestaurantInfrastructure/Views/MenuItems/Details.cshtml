@@ -4,45 +4,49 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h1>Детальна інформація</h1>
 
-<div>
-    <h4>MenuItem</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ImageUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Availability)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Availability)
-        </dd>
-    </dl>
+<div class="card mx-auto" style="max-width: 500px;">
+    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name" style="object-fit: cover; height: 250px;">
+
+    <div class="card-body">
+        <h4 class="card-title">@Model.Name</h4>
+        <p class="card-text">
+            <strong>Ціна:</strong> @Model.Price.ToString()₴<br />
+            <strong>Опис:</strong> @Model.Description<br />
+            <strong>Наявність:</strong> @if (Model.Availability ?? false)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="color: limegreen">
+                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z" />
+                </svg>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16" style="color: #FF0F0F">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+                </svg>
+            }
+        </p>
+        @if (Model.Categories != null && Model.Categories.Any())
+        {
+            <p>
+                <strong>Категорії:</strong>
+                @string.Join(", ", Model.Categories.Select(c => c.Name))@(".")
+
+            </p>
+        }
+        @if (Model.Cousines != null && Model.Cousines.Any())
+        {
+            <p>
+                <strong>Кухні:</strong>
+                @string.Join(", ", Model.Cousines.Select(c => c.Name))@(".")
+
+            </p>
+        }
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div style="margin-top: 50px">
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model?.Id">Змінити</a>
+    <a class="btn btn-info" asp-action="Index">Назад до списку</a>
 </div>

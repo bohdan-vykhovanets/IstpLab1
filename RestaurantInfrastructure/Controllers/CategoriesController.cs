@@ -35,6 +35,7 @@ namespace RestaurantInfrastructure.Controllers
 
             var category = await _context.Categories
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (category == null)
             {
                 return NotFound();
@@ -126,7 +127,9 @@ namespace RestaurantInfrastructure.Controllers
             }
 
             var category = await _context.Categories
+                .Include(c => c.MenuItems)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (category == null)
             {
                 return NotFound();
@@ -140,13 +143,21 @@ namespace RestaurantInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .Include(c => c.MenuItems)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
             if (category != null)
             {
+                foreach (var menuItem in category.MenuItems.ToList())
+                {
+                    menuItem.Categories.Remove(category);
+                }
+
                 _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

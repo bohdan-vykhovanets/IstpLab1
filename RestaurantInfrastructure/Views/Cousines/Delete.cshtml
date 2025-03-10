@@ -4,24 +4,31 @@
     ViewData["Title"] = "Delete";
 }
 
-<h1>Delete</h1>
+<h3>Ви впевнені, що хочете видалити цю кухню?</h3>
+<div class="card mx-auto" style="max-width: 500px;">
+    <div class="card-body">
+        <h4 class="card-title">@Model.Name</h4>
+        @if (Model.MenuItems != null && Model.MenuItems.Any())
+        {
+            <p>
+                <strong>Страви:</strong>
+                @string.Join(", ", Model.MenuItems.Select(c => c.Name))@(".")
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Cousine</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+            </p>
+        }
+    </div>
+
+    <div class="card-footer text-end delete-button">
+        <form asp-action="Delete" method="post" class="d-inline">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Видалити</button>
+        </form>
+    </div>
 </div>
+
+<a asp-action="Index" class="btn btn-secondary" style="margin-top: 50px; display: inline-flex; align-items: center; gap: 8px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+    </svg>
+    Відмінити
+</a>

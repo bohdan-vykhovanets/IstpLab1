@@ -4,18 +4,33 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Страви у @ViewBag.Name</h1>
+@if (ViewBag.Name != null){
+    <h1>Страви у @ViewBag.Name</h1>
+}
+else{
+    <h1>Список страв</h1>
+}
 
-<p>
-    @Html.ActionLink("Додати нову позицію", "Create", new {groupId = ViewBag.Id,  type = ViewBag.Type})
-</p>
+<a class="btn btn-warning" asp-action="Create">Додати нову позицію</a>
+<a class="btn btn-info" asp-controller="Categories">Переглянути категорії</a>
+<a class="btn btn-info" asp-controller="Cousines">Переглянути кухні</a>
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="searchString" class="form-control"
+               placeholder="Шукати за назвою або описом..."
+               value="@Context.Request.Query["searchString"]" />
+        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+</form>
+
 <table class="table table-striped">
     <thead>
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
-            <th>
+            <th style="width: 400px">
                 @Html.DisplayNameFor(model => model.Description)
             </th>
             <th>
@@ -41,11 +56,11 @@
                 @Html.DisplayFor(modelItem => item.Price)
             </td>
             <td>
-                <img src="@Url.Content(item.ImageUrl)" alt="@item.Name" style="height: 100px; width: auto; border-radius: 5px"/>
+                <img src="@Url.Content(item.ImageUrl)" alt="@item.Name" style="height: 150px; width: auto; border-radius: 5px"/>
             </td>
             <td>
-                <a type="button" class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
-                <a type="button" class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                <a type="button" class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Змінити</a>
+                <a type="button" class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
                 <a type="button" class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
             </td>
         </tr>

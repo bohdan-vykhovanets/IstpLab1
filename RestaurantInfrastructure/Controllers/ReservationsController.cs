@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RestaurantDomain.Models;
 using RestaurantInfrastructure.Context;
+using RestaurantInfrastructure.Models;
 
 namespace RestaurantInfrastructure.Controllers
 {
@@ -48,8 +49,21 @@ namespace RestaurantInfrastructure.Controllers
         // GET: Reservations/Create
         public IActionResult Create()
         {
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
-            return View();
+            var viewModel = new ReservationCreateViewModel
+            {
+                AvailableTables = _context.Tables
+                    .Select(t => new SelectListItem { Value = t.Id.ToString(), Text = t.Id.ToString() })
+                    .ToList(),
+                AvailableMenuItems = _context.MenuItems
+                    .Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name })
+                    .ToList(),
+                PreOrders = new List<PreOrderCreateViewModel>
+                {
+                    new PreOrderCreateViewModel()
+                }
+            };
+
+            return View(viewModel);
         }
 
         // POST: Reservations/Create
@@ -57,16 +71,58 @@ namespace RestaurantInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserId,ReservationDate,NumberOfGuests,SpecialRequests,Id")] Reservation reservation)
+        public async Task<IActionResult> Create(ReservationCreateViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(reservation);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                viewModel.AvailableTables = await _context.Tables
+                    .Select(t => new SelectListItem { Value = t.Id.ToString(), Text = t.Id.ToString()})
+                    .ToListAsync();
+                viewModel.AvailableMenuItems = await _context.MenuItems
+                    .Select(m => new SelectListItem { Value = m.Id.ToString(), Text = m.Name })
+                    .ToListAsync();
+                return View(viewModel);
             }
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", reservation.UserId);
-            return View(reservation);
+
+            var reservation = new Reservation
+            {
+                ReservationDate = viewModel.ReservationDate,
+                NumberOfGuests = viewModel.NumberOfGuests,
+                SpecialRequests = viewModel.SpecialRequests,
+
+                Tables = new List<Table>(),
+                PreOrders = new List<PreOrder>()
+            };
+
+            if (viewModel.SelectedTableIds != null)
+            {
+                foreach (var tableId in viewModel.SelectedTableIds)
+                {
+                    var table = await _context.Tables.FindAsync(tableId);
+                    if (table != null)
+                    {
+                        reservation.Tables.Add(table);
+                    }
+                }
+            }
+
+            foreach (var preOrderVm in viewModel.PreOrders)
+            {
+                var preOrder = new PreOrder
+                {
+                    ReservationId = preOrderVm.ReservationId,
+                    MenuItemId = preOrderVm.MenuItemId,
+                    Quantity = preOrderVm.Quantity
+
+                };
+
+                reservation.PreOrders.Add(preOrder);
+            }
+
+            _context.Reservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
         }
 
         // GET: Reservations/Edit/5
