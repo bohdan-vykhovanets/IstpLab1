@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantInfrastructure.Context;
+using System.Threading;
 
 namespace RestaurantInfrastructure.Controllers
 {
@@ -11,32 +12,41 @@ namespace RestaurantInfrastructure.Controllers
     {
         private record CountByItemResponseItem(string Item, int Count);
         private record CountByCousineResponseItem(string Cousine, int Count);
+
         private readonly RestaurantDbContext _context;
 
-        private ChartsController(RestaurantDbContext context)
+        public ChartsController(RestaurantDbContext context)
         {
             _context = context;
         }
 
-        [HttpGet("countByItem")]
-        public async Task<JsonResult> GetCountByItemAsync(CancellationToken cancellationToken)
+        [HttpGet("count-by-item")]
+        public async Task<JsonResult> GetCountByItem(CancellationToken cancellationToken)
         {
             var responseItems = await _context
                 .PreOrders
+                .Include(x => x.MenuItem)
                 .GroupBy(x => x.MenuItem.Name)
-                .Select(group => new CountByItemResponseItem(group.Key.ToString(), group.Count()))
-                .ToListAsync();
+                .Select(group => new
+                {
+                    menuItemName = group.Key,
+                    totalPreOrders = group.Sum(x => x.Quantity) ?? 0
+                })
+                .ToListAsync(cancellationToken);
 
             return new JsonResult(responseItems);
         }
 
-        public async Task<JsonResult> GetCountByCousinAsync(CancellationToken cancellationToken)
+        [HttpGet("menuitems-by-cousine")]
+        public async Task<JsonResult> GetCountByCousineAsync(CancellationToken cancellationToken)
         {
-            var responseItems = await _context
-                .Cousines
-                .GroupBy(x => x.Name)
-                .Select(group => new CountByCousineResponseItem(group.Key.ToString(), group.Count()))
-                .ToListAsync();
+            var responseItems = await _context.Cousines
+                .Select(c => new
+                {
+                    cousineName = c.Name,
+                    menuItemCount = c.MenuItems.Count()
+                })
+                .ToListAsync(cancellationToken);
 
             return new JsonResult(responseItems);
         }

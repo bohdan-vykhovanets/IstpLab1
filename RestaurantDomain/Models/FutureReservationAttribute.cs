@@ -25,7 +25,7 @@ namespace RestaurantDomain.Models.Attributes
             {
                 minAllowed = new DateTime(minAllowed.Year, minAllowed.Month, minAllowed.Day, 10, 0, 0);
             }
-            else if (minAllowed.Hour >= 22)
+            else if (minAllowed.Hour >= 20)
             {
                 minAllowed = new DateTime(minAllowed.Year, minAllowed.Month, minAllowed.Day, 10, 0, 0).AddDays(1);
             }

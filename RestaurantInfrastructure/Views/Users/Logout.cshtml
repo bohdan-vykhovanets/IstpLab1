@@ -1,0 +1,6 @@
+﻿@model RestaurantInfrastructure.Models.LoginViewModel
+
+<a href="javascript.void(0);" onclick="document.getElementById('logoutForm').submit();">Вийти</a>
+<form asp-action="Logout" method="post" id="logoutForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>

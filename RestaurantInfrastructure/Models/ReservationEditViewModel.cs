@@ -7,8 +7,10 @@ using RestaurantDomain.Models.Attributes;
 
 namespace RestaurantInfrastructure.Models
 {
-    public class ReservationCreateViewModel
+    public class ReservationEditViewModel
     {
+        public int ReservationId { get; set; }
+
         public string? UserId { get; set; }
 
         [DisplayName("Дата та час початку")]

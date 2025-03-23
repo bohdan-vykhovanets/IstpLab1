@@ -19,16 +19,47 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav flex-grow-1 me-auto">
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Головна</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="MenuItems" asp-action="">Меню</a>
-                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="MenuItems" asp-action="">Меню</a>
+                            </li>
+                            <li>
+                                <a class="nav-link" asp-area="" asp-controller="Reservations" asp-action="">Бронювання</a>
+                            </li>
+                        }
                         <li>
-                            <a class="nav-link" asp-area="" asp-controller="Reservations" asp-action="">Бронювання</a>
+                            <a class="nav-link" asp-area="" asp-controller="Statistics" asp-action="">Статистика</a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <a class="nav-link" href="javascript:void(0);" id="logoutLink">Logout</a>
+                                <form id="logoutForm" asp-controller="Users" asp-action="Logout" method="post" style="display:none;">
+                                    @Html.AntiForgeryToken()
+                                </form>
+                                <script>
+                                    document.getElementById('logoutLink').addEventListener('click', function () {
+                                        document.getElementById('logoutForm').submit();
+                                    });
+                                </script>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <a class="nav-link" asp-area="" asp-controller="Users" asp-action="Login">Вхід</a>
+                            </li>
+                            <li>
+                                <a class="nav-link" asp-area="" asp-controller="Users" asp-action="Register">Реєстрація</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

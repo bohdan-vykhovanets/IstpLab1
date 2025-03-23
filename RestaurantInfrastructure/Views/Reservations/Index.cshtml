@@ -7,13 +7,13 @@
 <h1>Бронювання</h1>
 
 <p>
-    <a asp-action="Create">Додати бронювання</a>
+    <a class="btn btn-warning" asp-action="Create">Додати бронювання</a>
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.ReservationDate)
+                @Html.DisplayNameFor(model => model.ReservationDateStart)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.NumberOfGuests)
@@ -21,33 +21,64 @@
             <th>
                 @Html.DisplayNameFor(model => model.SpecialRequests)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.User)
-            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ReservationDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NumberOfGuests)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SpecialRequests)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.User.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @using System.Security.Claims;
+        @if (User.IsInRole("Admin"))
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReservationDateStart)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReservationDateEnd)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.NumberOfGuests)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SpecialRequests)
+                    </td>
+                    <td>
+                        <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Змінити</a>
+                        <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            foreach (var item in Model)
+            {
+                if (item.User.Id == userId)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ReservationDateStart)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ReservationDateEnd)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.NumberOfGuests)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.SpecialRequests)
+                        </td>
+                        <td>
+                            <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Змінити</a>
+                            <a class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                            <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                        </td>
+                    </tr>
+                }
+            }
+        }
     </tbody>
 </table>

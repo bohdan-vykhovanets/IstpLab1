@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RestaurantDomain.Models;
 
 public partial class Review : Entity
 {
-    public int? UserId { get; set; }
+    public string UserId { get; set; }
 
+    [ForeignKey("UserId")]
+    public virtual User User { get; set; }
+    
     [DisplayName("Оцінка")]
     [Required(ErrorMessage = "Оцінка повинна бути вказана.")]
     [Range(1, 5, ErrorMessage = "Оцінка може бути від 1 до 5.")]
@@ -20,6 +24,4 @@ public partial class Review : Entity
 
     [DisplayName("Залишений")]
     public DateTime? CreatedAt { get; set; } = DateTime.Now;
-
-    public virtual User? User { get; set; }
 }

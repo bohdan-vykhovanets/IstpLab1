@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using RestaurantDomain.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace RestaurantInfrastructure.Context;
 
-public partial class RestaurantDbContext : DbContext
+public partial class RestaurantDbContext : IdentityDbContext<User>
 {
     public RestaurantDbContext()
     {
@@ -30,7 +32,7 @@ public partial class RestaurantDbContext : DbContext
 
     public virtual DbSet<Table> Tables { get; set; }
 
-    public virtual DbSet<User> Users { get; set; }
+    //public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -38,163 +40,173 @@ public partial class RestaurantDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Category>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("Category_pkey");
+        base.OnModelCreating(modelBuilder);
 
-            entity.ToTable("Category");
+        modelBuilder.Entity<Reservation>()
+        .Property(r => r.ReservationDateStart)
+        .HasColumnType("timestamp without time zone");
 
-            entity.HasIndex(e => e.Name, "Category_Name_key").IsUnique();
+        modelBuilder.Entity<Reservation>()
+            .Property(r => r.ReservationDateEnd)
+            .HasColumnType("timestamp without time zone");
 
-            entity.Property(e => e.Id).HasColumnName("CategoryID");
-            entity.Property(e => e.Name).HasMaxLength(50);
-        });
+        //    modelBuilder.Entity<Category>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("Category_pkey");
 
-        modelBuilder.Entity<Cousine>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("Cousine_pkey");
+        //        entity.ToTable("Category");
 
-            entity.ToTable("Cousine");
+        //        entity.HasIndex(e => e.Name, "Category_Name_key").IsUnique();
 
-            entity.HasIndex(e => e.Name, "Cousine_Name_key").IsUnique();
+        //        entity.Property(e => e.Id).HasColumnName("CategoryID");
+        //        entity.Property(e => e.Name).HasMaxLength(50);
+        //    });
 
-            entity.Property(e => e.Id).HasColumnName("CousineID");
-            entity.Property(e => e.Name).HasMaxLength(50);
-        });
+        //    modelBuilder.Entity<Cousine>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("Cousine_pkey");
 
-        modelBuilder.Entity<MenuItem>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("MenuItem_pkey");
+        //        entity.ToTable("Cousine");
 
-            entity.ToTable("MenuItem");
+        //        entity.HasIndex(e => e.Name, "Cousine_Name_key").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("MenuItemID");
-            entity.Property(e => e.ImageUrl)
-                .HasMaxLength(255)
-                .HasColumnName("ImageURL");
-            entity.Property(e => e.Name).HasMaxLength(255);
-            entity.Property(e => e.Price).HasPrecision(10, 2);
+        //        entity.Property(e => e.Id).HasColumnName("CousineID");
+        //        entity.Property(e => e.Name).HasMaxLength(50);
+        //    });
 
-            entity.HasMany(d => d.Categories).WithMany(p => p.MenuItems)
-                .UsingEntity<Dictionary<string, object>>(
-                    "MenuItemCategory",
-                    r => r.HasOne<Category>().WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("MenuItemCategory_CategoryID_fkey"),
-                    l => l.HasOne<MenuItem>().WithMany()
-                        .HasForeignKey("MenuItemId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("MenuItemCategory_MenuItemID_fkey"),
-                    j =>
-                    {
-                        j.HasKey("MenuItemId", "CategoryId").HasName("MenuItemCategory_pkey");
-                        j.ToTable("MenuItemCategory");
-                        j.HasIndex(new[] { "MenuItemId", "CategoryId" }, "MenuItemCategory_MenuItemID_CategoryID_idx").IsUnique();
-                        j.IndexerProperty<int>("MenuItemId").HasColumnName("MenuItemID");
-                        j.IndexerProperty<int>("CategoryId").HasColumnName("CategoryID");
-                    });
+        //    modelBuilder.Entity<MenuItem>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("MenuItem_pkey");
 
-            entity.HasMany(d => d.Cousines).WithMany(p => p.MenuItems)
-                .UsingEntity<Dictionary<string, object>>(
-                    "MenuItemCousine",
-                    r => r.HasOne<Cousine>().WithMany()
-                        .HasForeignKey("CousineId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("MenuItemCousine_CousineID_fkey"),
-                    l => l.HasOne<MenuItem>().WithMany()
-                        .HasForeignKey("MenuItemId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("MenuItemCousine_MenuItemID_fkey"),
-                    j =>
-                    {
-                        j.HasKey("MenuItemId", "CousineId").HasName("MenuItemCousine_pkey");
-                        j.ToTable("MenuItemCousine");
-                        j.HasIndex(new[] { "MenuItemId", "CousineId" }, "MenuItemCousine_MenuItemID_CousineID_idx").IsUnique();
-                        j.IndexerProperty<int>("MenuItemId").HasColumnName("MenuItemID");
-                        j.IndexerProperty<int>("CousineId").HasColumnName("CousineID");
-                    });
-        });
+        //        entity.ToTable("MenuItem");
 
-        modelBuilder.Entity<PreOrder>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PreOrder_pkey");
+        //        entity.Property(e => e.Id).HasColumnName("MenuItemID");
+        //        entity.Property(e => e.ImageUrl)
+        //            .HasMaxLength(255)
+        //            .HasColumnName("ImageURL");
+        //        entity.Property(e => e.Name).HasMaxLength(255);
+        //        entity.Property(e => e.Price).HasPrecision(10, 2);
 
-            entity.ToTable("PreOrder");
+        //        entity.HasMany(d => d.Categories).WithMany(p => p.MenuItems)
+        //            .UsingEntity<Dictionary<string, object>>(
+        //                "MenuItemCategory",
+        //                r => r.HasOne<Category>().WithMany()
+        //                    .HasForeignKey("CategoryId")
+        //                    .OnDelete(DeleteBehavior.ClientSetNull)
+        //                    .HasConstraintName("MenuItemCategory_CategoryID_fkey"),
+        //                l => l.HasOne<MenuItem>().WithMany()
+        //                    .HasForeignKey("MenuItemId")
+        //                    .OnDelete(DeleteBehavior.ClientSetNull)
+        //                    .HasConstraintName("MenuItemCategory_MenuItemID_fkey"),
+        //                j =>
+        //                {
+        //                    j.HasKey("MenuItemId", "CategoryId").HasName("MenuItemCategory_pkey");
+        //                    j.ToTable("MenuItemCategory");
+        //                    j.HasIndex(new[] { "MenuItemId", "CategoryId" }, "MenuItemCategory_MenuItemID_CategoryID_idx").IsUnique();
+        //                    j.IndexerProperty<int>("MenuItemId").HasColumnName("MenuItemID");
+        //                    j.IndexerProperty<int>("CategoryId").HasColumnName("CategoryID");
+        //                });
 
-            entity.Property(e => e.Id).HasColumnName("PreOrderID");
-            entity.Property(e => e.MenuItemId).HasColumnName("MenuItemID");
-            entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
+        //        entity.HasMany(d => d.Cousines).WithMany(p => p.MenuItems)
+        //            .UsingEntity<Dictionary<string, object>>(
+        //                "MenuItemCousine",
+        //                r => r.HasOne<Cousine>().WithMany()
+        //                    .HasForeignKey("CousineId")
+        //                    .OnDelete(DeleteBehavior.ClientSetNull)
+        //                    .HasConstraintName("MenuItemCousine_CousineID_fkey"),
+        //                l => l.HasOne<MenuItem>().WithMany()
+        //                    .HasForeignKey("MenuItemId")
+        //                    .OnDelete(DeleteBehavior.ClientSetNull)
+        //                    .HasConstraintName("MenuItemCousine_MenuItemID_fkey"),
+        //                j =>
+        //                {
+        //                    j.HasKey("MenuItemId", "CousineId").HasName("MenuItemCousine_pkey");
+        //                    j.ToTable("MenuItemCousine");
+        //                    j.HasIndex(new[] { "MenuItemId", "CousineId" }, "MenuItemCousine_MenuItemID_CousineID_idx").IsUnique();
+        //                    j.IndexerProperty<int>("MenuItemId").HasColumnName("MenuItemID");
+        //                    j.IndexerProperty<int>("CousineId").HasColumnName("CousineID");
+        //                });
+        //    });
 
-            entity.HasOne(d => d.MenuItem).WithMany(p => p.PreOrders)
-                .HasForeignKey(d => d.MenuItemId)
-                .HasConstraintName("PreOrder_MenuItemID_fkey");
+        //    modelBuilder.Entity<PreOrder>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("PreOrder_pkey");
 
-            entity.HasOne(d => d.Reservation).WithMany(p => p.PreOrders)
-                .HasForeignKey(d => d.ReservationId)
-                .HasConstraintName("PreOrder_ReservationID_fkey");
-        });
+        //        entity.ToTable("PreOrder");
 
-        modelBuilder.Entity<Reservation>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("Reservation_pkey");
+        //        entity.Property(e => e.Id).HasColumnName("PreOrderID");
+        //        entity.Property(e => e.MenuItemId).HasColumnName("MenuItemID");
+        //        entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
 
-            entity.ToTable("Reservation");
+        //        entity.HasOne(d => d.MenuItem).WithMany(p => p.PreOrders)
+        //            .HasForeignKey(d => d.MenuItemId)
+        //            .HasConstraintName("PreOrder_MenuItemID_fkey");
 
-            entity.Property(e => e.Id).HasColumnName("ReservationID");
-            entity.Property(e => e.ReservationDate).HasColumnType("timestamp without time zone");
-            entity.Property(e => e.UserId).HasColumnName("UserID");
+        //        entity.HasOne(d => d.Reservation).WithMany(p => p.PreOrders)
+        //            .HasForeignKey(d => d.ReservationId)
+        //            .HasConstraintName("PreOrder_ReservationID_fkey");
+        //    });
 
-            entity.HasOne(d => d.User).WithMany(p => p.Reservations)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("Reservation_UserID_fkey");
-        });
+        //    modelBuilder.Entity<Reservation>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("Reservation_pkey");
 
-        modelBuilder.Entity<Review>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("Review_pkey");
+        //        entity.ToTable("Reservation");
 
-            entity.ToTable("Review");
+        //        entity.Property(e => e.Id).HasColumnName("ReservationID");
+        //        entity.Property(e => e.ReservationDate).HasColumnType("timestamp without time zone");
+        //        entity.Property(e => e.UserId).HasColumnName("UserID");
 
-            entity.Property(e => e.Id).HasColumnName("ReviewID");
-            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-            entity.Property(e => e.UserId).HasColumnName("UserID");
+        //        entity.HasOne(d => d.User).WithMany(p => p.Reservations)
+        //            .HasForeignKey(d => d.UserId)
+        //            .HasConstraintName("Reservation_UserID_fkey");
+        //    });
 
-            entity.HasOne(d => d.User).WithMany(p => p.Reviews)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("Review_UserID_fkey");
-        });
+        //    modelBuilder.Entity<Review>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("Review_pkey");
 
-        modelBuilder.Entity<Table>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("Table_pkey");
+        //        entity.ToTable("Review");
 
-            entity.ToTable("Table");
+        //        entity.Property(e => e.Id).HasColumnName("ReviewID");
+        //        entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+        //        entity.Property(e => e.UserId).HasColumnName("UserID");
 
-            entity.Property(e => e.Id).HasColumnName("TableID");
-            entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
+        //        entity.HasOne(d => d.User).WithMany(p => p.Reviews)
+        //            .HasForeignKey(d => d.UserId)
+        //            .HasConstraintName("Review_UserID_fkey");
+        //    });
 
-            entity.HasOne(d => d.Reservation).WithMany(p => p.Tables)
-                .HasForeignKey(d => d.ReservationId)
-                .HasConstraintName("Table_ReservationID_fkey");
-        });
+        //    modelBuilder.Entity<Table>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("Table_pkey");
 
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("User_pkey");
+        //        entity.ToTable("Table");
 
-            entity.ToTable("User");
+        //        entity.Property(e => e.Id).HasColumnName("TableID");
+        //        entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
 
-            entity.HasIndex(e => e.Email, "User_Email_key").IsUnique();
+        //        entity.HasOne(d => d.Reservation).WithMany(p => p.Tables)
+        //            .HasForeignKey(d => d.ReservationId)
+        //            .HasConstraintName("Table_ReservationID_fkey");
+        //    });
 
-            entity.Property(e => e.Id).HasColumnName("UserID");
-            entity.Property(e => e.Email).HasMaxLength(255);
-            entity.Property(e => e.Name).HasMaxLength(255);
-            entity.Property(e => e.PhoneNumber).HasMaxLength(15);
-        });
+        //    modelBuilder.Entity<User>(entity =>
+        //    {
+        //        entity.HasKey(e => e.Id).HasName("User_pkey");
 
-        OnModelCreatingPartial(modelBuilder);
+        //        entity.ToTable("User");
+
+        //        entity.HasIndex(e => e.Email, "User_Email_key").IsUnique();
+
+        //        entity.Property(e => e.Id).HasColumnName("UserID");
+        //        entity.Property(e => e.Email).HasMaxLength(255);
+        //        entity.Property(e => e.Name).HasMaxLength(255);
+        //        entity.Property(e => e.PhoneNumber).HasMaxLength(15);
+        //    });
+
+        //    OnModelCreatingPartial(modelBuilder);
     }
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+    //partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

@@ -11,9 +11,12 @@ else{
     <h1>Список страв</h1>
 }
 
-<a class="btn btn-warning" asp-action="Create">Додати нову позицію</a>
-<a class="btn btn-info" asp-controller="Categories">Переглянути категорії</a>
-<a class="btn btn-info" asp-controller="Cousines">Переглянути кухні</a>
+@if (User.IsInRole("Admin"))
+{
+    <a class="btn btn-warning" asp-action="Create">Додати нову позицію</a>
+    <a class="btn btn-info" asp-controller="Categories">Переглянути категорії</a>
+    <a class="btn btn-info" asp-controller="Cousines">Переглянути кухні</a>
+}
 
 <form asp-action="Index" method="get" class="mb-3">
     <div class="input-group">
@@ -58,11 +61,14 @@ else{
             <td>
                 <img src="@Url.Content(item.ImageUrl)" alt="@item.Name" style="height: 150px; width: auto; border-radius: 5px"/>
             </td>
-            <td>
-                <a type="button" class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Змінити</a>
-                <a type="button" class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
-                <a type="button" class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
-            </td>
+            @if (User.IsInRole("Admin"))
+            {
+                <td>
+                    <a type="button" class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Змінити</a>
+                    <a type="button" class="btn btn-info" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                    <a type="button" class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                </td>
+            }
         </tr>
     }
 }

@@ -10,17 +10,22 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="UserId" value="1" />
-            @* <div class="form-group"> *@
-            @*     <label asp-for="UserId" class="control-label"></label> *@
-            @*     <select asp-for="UserId" class ="form-control" asp-items="ViewBag.UserId"></select> *@
-            @* </div> *@
+            @using System.Security.Claims
+            @{
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
+            <input type="hidden" asp-for="UserId" value="@userId" />
             <div class="form-group">
-                <label asp-for="ReservationDate" class="control-label"></label>
-                <input asp-for="ReservationDate" type="datetime-local" class="form-control" />
-                <span asp-validation-for="ReservationDate" class="text-danger"></span>
+                <label asp-for="ReservationDateStart" class="control-label"></label>
+                <input asp-for="ReservationDateStart" class="form-control" type="datetime-local" step="3600" />
+                <span asp-validation-for="ReservationDateStart" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label asp-for="ReservationDateEnd" class="control-label"></label>
+                <input asp-for="ReservationDateEnd" class="form-control" type="datetime-local" step="3600" />
+                <span asp-validation-for="ReservationDateEnd" class="text-danger"></span>
+            </div>
+            Зауважте:<br>Бронювання триватиме дві години починаючи від вибраного часу. Ресторан працює з 10:00 до 22:00.<br>
             <div class="form-group">
                 <label asp-for="NumberOfGuests" class="control-label"></label>
                 <input asp-for="NumberOfGuests" class="form-control" />
@@ -31,16 +36,11 @@
                 <input asp-for="SpecialRequests" class="form-control" />
                 <span asp-validation-for="SpecialRequests" class="text-danger"></span>
             </div>
+            <button type="button" id="refreshTables" class="btn btn-secondary">Оновити вільні столики</button>
             <div class="form-group">
-                <label>Столи</label>
-                @foreach (var table in Model.AvailableTables)
-                {
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" name="SelectedTableIds" value="@table.Value"
-                        @(Model.SelectedTableIds.Contains(int.Parse(table.Value)) ? "checked" : "") />
-                        <label class="form-check-label">@table.Text</label>
-                    </div>
-                }
+                <label>Вільні столики</label>
+                <div id="availableTablesContainer">
+                </div>
             </div>
             <div id="preorders">
                 <h4>Передзамовлення</h4>
@@ -95,6 +95,67 @@
                     </div>
                 </div>`;
             container.insertAdjacentHTML('beforeend', template);
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let now = new Date();
+
+            now.setMinutes(0, 0, 0);
+
+            let formattedDateTime = now.toISOString().slice(0, 16);
+
+            document.getElementById("reservationDate").value = formattedDateTime;
+        });
+    </script>
+    <script>
+        document.getElementById('refreshTables').addEventListener('click', function () {
+            var start = document.getElementById('ReservationDateStart').value;
+            var end = document.getElementById('ReservationDateEnd').value;
+            if (!start || !end) {
+                alert("Please select both start and end times.");
+                return;
+            }
+            var url = '/available-tables?start=' + encodeURIComponent(start) + '&end=' + encodeURIComponent(end);
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    var container = document.getElementById('availableTablesContainer');
+                    container.innerHTML = "";
+                    if (data.length === 0) {
+                        container.innerHTML = "<p>Немає вільних столиків для вибраного часу.</p>";
+                    } else {
+                        data.forEach(function (table) {
+                            var div = document.createElement("div");
+                            div.classList.add("form-check");
+
+                            var input = document.createElement("input");
+                            input.type = "checkbox";
+                            input.classList.add("form-check-input");
+                            input.name = "SelectedTableIds";
+                            input.value = table.id;
+                            input.id = "table_" + table.id;
+
+                            var label = document.createElement("label");
+                            label.classList.add("form-check-label");
+                            label.setAttribute("for", "table_" + table.id);
+                            label.textContent = "Столик " + table.id + " - " + table.numberOfSeats + " місць, " + (table.isOutdoor ? "ззовні" : "всередині");
+
+                            div.appendChild(input);
+                            div.appendChild(label);
+                            container.appendChild(div);
+                        });
+                    }
+                })
+                .catch(function (error) {
+                    alert("Помилка оновлення вільних столиків: " + error.message);
+                    console.error("Error fetching available tables:", error);
+                });
         });
     </script>
 }

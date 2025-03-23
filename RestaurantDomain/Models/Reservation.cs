@@ -2,19 +2,29 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using RestaurantDomain.Models.Attributes;
 
 namespace RestaurantDomain.Models;
 
 public partial class Reservation : Entity
 {
-    public int? UserId { get; set; }
+    public string UserId { get; set; }
 
-    [DisplayName("Дата та час")]
+    [ForeignKey("UserId")]
+    public virtual User User { get; set; }
+
+    [DisplayName("Дата та час початку")]
     [Required(ErrorMessage = "Бронювання повинно мати дату та час.")]
     [DataType(DataType.DateTime)]
     [FutureReservation(ErrorMessage = "Бронювання повинно бути зроблене хоча б за 12 годин та в період між 10 та 22 годинами.")]
-    public DateTime? ReservationDate { get; set; }
+    public DateTime ReservationDateStart { get; set; }
+
+    [DisplayName("Дата та час завершення")]
+    [Required(ErrorMessage = "Бронювання повинно мати дату та час.")]
+    [DataType(DataType.DateTime)]
+    [FutureReservation(ErrorMessage = "Бронювання повинно бути зроблене хоча б за 12 годин та в період між 10 та 22 годинами.")]
+    public DateTime ReservationDateEnd { get; set; }
 
     [DisplayName("Кількість гостей")]
     [Required(ErrorMessage = "Кількість гостей повинна бути вказана.")]
@@ -28,6 +38,4 @@ public partial class Reservation : Entity
     public virtual ICollection<PreOrder> PreOrders { get; set; } = new List<PreOrder>();
 
     public virtual ICollection<Table> Tables { get; set; } = new List<Table>();
-
-    public virtual User? User { get; set; }
 }

@@ -6,9 +6,6 @@ namespace RestaurantInfrastructure.Models
     public class PreOrderCreateViewModel
     {
         [Required]
-        public int? ReservationId { get; set; }
-
-        [Required]
         public int? MenuItemId { get; set; }
 
         [DisplayName("Кількість")]

@@ -37,6 +37,7 @@ footer {
     position: relative;
     background-color: rgb(28, 24, 24);
     z-index: 1;
+    margin-top: auto;
 }
 
 body::before {
@@ -47,7 +48,7 @@ body::before {
     left: 50%;
     width: 75%;
     transform: translateX(-50%);
-    background-color: rgba(28, 24, 24);
+    background-color: rgba(28, 24, 24, 0.8);
     pointer-events: none;
     z-index: -1;
 }

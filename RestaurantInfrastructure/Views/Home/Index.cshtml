@@ -6,14 +6,18 @@
     <h1>Вітаємо у ресторані "De MoroZe"!</h1>
     <p>У нас ви зможете скуштувати найращі страви найкращих кухонь усього світу</p>
 
-    <div class="row">
-        <div class="col-3">
-            <div id="countByItemChart"></div>
-        </div>
-    </div>
-
-    <a class="btn btn-primary btn-lg" href="/MenuItems">Переглянути меню</a>
-    <a class="btn btn-primary btn-lg" href="/Reservations/Create">Забронювати столик</a>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <a class="btn btn-primary btn-lg" href="/MenuItems">Переглянути меню</a>
+        <a class="btn btn-primary btn-lg" href="/Reservations/Create">Забронювати столик</a>
+    }
+    else
+    {
+        <p>Для перегляду меню та створення бронювань увійдіть у систему</p>
+        <br />
+        <a class="btn btn-warning btn-lg" href="/Users/Login">Увійти</a>
+    }
+    
 </div>
 
 @section Scripts
